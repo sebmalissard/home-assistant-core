@@ -1,0 +1,22 @@
+{
+  "state_attributes": {
+    "fjaraskupan__blah": {
+      "preset_mode": {
+        "values": {
+          "normal": "Normal",
+          "after_cooking_auto": "After cooking automatic",
+          "after_cooking_manual": "After cooking manual",
+          "periodic_ventilation": "Periodic ventilation"
+        }
+      },
+      "preset_modes": {
+        "values": {
+          "normal": "[%key:component::fjaraskupan_climate::state_attributes::fjaraskupan__blah::preset_mode::values::normal%]",
+          "after_cooking_auto": "[%key:component::fjaraskupan_climate::state_attributes::fjaraskupan__blah::preset_mode::values::after_cooking_auto%]",
+          "after_cooking_manual": "[%key:component::fjaraskupan_climate::state_attributes::fjaraskupan__blah::preset_mode::values::after_cooking_manual%]",
+          "periodic_ventilation": "[%key:component::fjaraskupan_climate::state_attributes::fjaraskupan__blah::preset_mode::values::periodic_ventilation%]"
+        }
+      }
+    }
+  }
+}
