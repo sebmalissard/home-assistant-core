@@ -66,7 +66,6 @@ PLATFORMS: list[Platform] = [
 
 IGNORED_OVERKIZ_DEVICES: list[UIClass | UIWidget] = [
     UIClass.PROTOCOL_GATEWAY,
-    UIClass.POD,
 ]
 
 # Used to map the Somfy widget and ui_class to the Home Assistant platform
