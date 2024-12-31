@@ -102,6 +102,33 @@ SWITCH_DESCRIPTIONS: list[OverkizSwitchDescription] = [
         ),
         entity_category=EntityCategory.CONFIG,
     ),
+    # DomesticHotWaterProduction/WaterHeatingSystem
+    OverkizSwitchDescription(
+        key=OverkizState.MODBUSLINK_DHW_ABSENCE_MODE,
+        name="Power",
+        turn_on=OverkizCommand.SET_ABSENCE_MODE,
+        turn_on_args=OverkizCommandParam.OFF,
+        turn_off=OverkizCommand.SET_ABSENCE_MODE,
+        turn_off_args=OverkizCommandParam.ON,
+        icon="mdi:power",
+        is_on=lambda select_state: (
+            select_state(OverkizState.MODBUSLINK_DHW_ABSENCE_MODE)
+            == OverkizCommandParam.OFF
+        ),
+    ),
+    OverkizSwitchDescription(
+        key=OverkizState.MODBUSLINK_DHW_BOOST_MODE,
+        name="Boost",
+        turn_on=OverkizCommand.SET_BOOST_MODE,
+        turn_on_args=OverkizCommandParam.ON,
+        turn_off=OverkizCommand.SET_BOOST_MODE,
+        turn_off_args=OverkizCommandParam.OFF,
+        icon="mdi:rocket-launch",
+        is_on=lambda select_state: (
+            select_state(OverkizState.MODBUSLINK_DHW_BOOST_MODE)
+            == OverkizCommandParam.ON
+        ),
+    ),
 ]
 
 SUPPORTED_DEVICES = {
@@ -116,19 +143,32 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Overkiz switch from a config entry."""
     data: HomeAssistantOverkizData = hass.data[DOMAIN][entry.entry_id]
+    entities: list[OverkizSwitch] = []
 
-    async_add_entities(
-        OverkizSwitch(
-            device.device_url,
-            data.coordinator,
-            description,
+    for device in data.coordinator.data.values():
+        entities.extend(
+            OverkizSwitch(
+                device.device_url,
+                data.coordinator,
+                description,
+            )
+            for state in device.definition.states
+            if (description := SUPPORTED_DEVICES.get(state.qualified_name))
         )
-        for device in data.platforms[Platform.SWITCH]
-        if (
-            description := SUPPORTED_DEVICES.get(device.widget)
-            or SUPPORTED_DEVICES.get(device.ui_class)
-        )
-    )
+
+    for device in data.platforms[Platform.SWITCH]:
+        if description := SUPPORTED_DEVICES.get(device.widget) or SUPPORTED_DEVICES.get(
+            device.ui_class
+        ):
+            entities.append(
+                OverkizSwitch(
+                    device.device_url,
+                    data.coordinator,
+                    description,
+                )
+            )
+
+    async_add_entities(entities)
 
 
 class OverkizSwitch(OverkizDescriptiveEntity, SwitchEntity):
