@@ -53,30 +53,42 @@ class AtlanticDomesticHotWaterProductionMBLComponent(OverkizEntity, WaterHeaterE
                 OverkizState.CORE_MINIMAL_TEMPERATURE_MANUAL_MODE
             ),
         )
+        self._attr_target_temperature_step = 5.0
 
     @property
     def current_temperature(self) -> float:
         """Return the current temperature."""
-        return cast(
-            float,
-            self.executor.select_state(
-                OverkizState.MODBUSLINK_MIDDLE_WATER_TEMPERATURE
-            ),
-        )
+        # Sauter Guelma water heater has 2 tanks (CORE_NUMBER_OF_TANK = 2)
+        #return cast(
+        #    float,
+        #    self.executor.select_state(
+        #        OverkizState.MODBUSLINK_MIDDLE_WATER_TEMPERATURE
+        #    ),
+        #)
+        temp1 = cast(float, self.executor.select_state(OverkizState.MODBUSLINK_MIDDLE_WATER_TEMPERATURE),)
+        temp2 = cast(float, self.executor.select_state(OverkizState.CORE_MIDDLE_WATER_TEMPERATURE_IN),)
+        return max(temp1, temp2)
 
     @property
     def target_temperature(self) -> float:
         """Return the temperature corresponding to the PRESET."""
-        return cast(
-            float,
-            self.executor.select_state(OverkizState.CORE_WATER_TARGET_TEMPERATURE),
-        )
+        # Sauter Guelma water heater target temperature is set by the shower number
+        #return cast(
+        #    float,
+        #    self.executor.select_state(OverkizState.CORE_WATER_TARGET_TEMPERATURE),
+        #)
+        return (cast(float, self.executor.select_state(OverkizState.CORE_EXPECTED_NUMBER_OF_SHOWER),) - 1) * 5 + 50
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new temperature."""
         temperature = kwargs[ATTR_TEMPERATURE]
+        # Sauter Guelma water heater target temperature is set by the shower number
+        #await self.executor.async_execute_command(
+        #    OverkizCommand.SET_TARGET_DHW_TEMPERATURE, temperature
+        #)
+        expected_showers = (temperature - 50) // 5 + 1
         await self.executor.async_execute_command(
-            OverkizCommand.SET_TARGET_DHW_TEMPERATURE, temperature
+            OverkizCommand.SET_EXPECTED_NUMBER_OF_SHOWER, expected_showers
         )
 
     @property
