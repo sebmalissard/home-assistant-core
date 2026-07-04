@@ -18,6 +18,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from . import OverkizDataConfigEntry
 from .const import IGNORED_OVERKIZ_DEVICES
 from .entity import OverkizDescriptiveEntity
+from .gateway_connectivity import async_setup_gateway_connectivity_sensors
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -169,6 +170,9 @@ async def async_setup_entry(
         )
 
     async_add_entities(entities)
+
+    # Add gateway connectivity sensors
+    await async_setup_gateway_connectivity_sensors(hass, entry, async_add_entities)
 
 
 class OverkizBinarySensor(OverkizDescriptiveEntity, BinarySensorEntity):
